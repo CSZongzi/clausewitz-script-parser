@@ -3,4 +3,7 @@ output/
 target/
 
 # HOI4 Resources
-res/
+res/special.txt
+
+# IDEA
+.idea
