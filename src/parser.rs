@@ -264,7 +264,7 @@ fn parse_file(pairs: Pairs<Rule>) -> Vec<Item> {
 // Format date
 fn fmt_date(d: &Date) -> String {
     match d.h {
-        Some(h) => format!("{}.{}.{}.{}", d.y, d.m, d.d, h),
+        Some(h) => format!("\"{}.{}.{}.{}\"", d.y, d.m, d.d, h),
         None => format!("{}.{}.{}", d.y, d.m, d.d),
     }
 }
@@ -335,7 +335,7 @@ fn serialize_value(v: &Value, indent: usize) -> String {
             let mut out = String::new();
             out.push_str("{\n");
             for it in items {
-                out.push_str(&serialize_item(it, indent + 2));
+                out.push_str(&serialize_item(it, indent + 4));
             }
             out.push_str(&" ".repeat(indent));
             out.push_str("}\n");
@@ -350,6 +350,7 @@ fn serialize_item(i: &Item, indent: usize) -> String {
         Item::Pair { key, op, value } => {
             let mut line = String::new();
             line.push_str(&" ".repeat(indent));
+            // TODO: 这里应该改为4空格长度制表符缩进，官方文件如此
             line.push_str(&serialize_key(key));
             line.push_str(" ");
             line.push_str(match op {
