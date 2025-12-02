@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod hoi4_tests {
-    use clausewitz_script_parser::parser::{parse_str, serialize_file};
+    use clausewitz_script_parser::parser::{parse_str, serialize_ast};
     use std::fs;
     use std::path::Path;
     /// 测试 common/characters 文件
@@ -18,7 +18,7 @@ mod hoi4_tests {
         fs::create_dir_all(OUTPUT_DIR).expect("创建失败！路径不合法");
 
         fs::write(OUTPUT_AST_PATH, format!("{:#?}", ast)).expect("写入失败！抽象语法树异常");
-        fs::write(OUTPUT_TXT_PATH, serialize_file(&ast)).expect("写入失败！文本异常");
+        fs::write(OUTPUT_TXT_PATH, serialize_ast(&ast)).expect("写入失败！文本异常");
 
         let output = fs::read_to_string(OUTPUT_TXT_PATH).expect("读取失败！生成文本文件不存在");
         let output_ast = parse_str(&output).expect("解析失败！内容不合法");
