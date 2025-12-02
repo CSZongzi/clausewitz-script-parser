@@ -1,9 +1,9 @@
+# IDE
+.idea
+
 # Output
 output/
 target/
 
 # HOI4 Resources
-res/special.txt
-
-# IDEA
-.idea
+res
