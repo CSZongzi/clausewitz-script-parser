@@ -67,9 +67,7 @@ characters= { # TODO 测试不规则缩进
             ideology = fascism_ideology
             expire = "1960.1.1.1"
             id = -1
-            traits = {
-                hawk
-            }
+            traits = {}
         }
     }
 }
