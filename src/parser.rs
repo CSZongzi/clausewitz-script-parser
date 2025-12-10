@@ -1,6 +1,7 @@
 use pest::iterators::{Pair as PestPair, Pairs};
 use pest::Parser;
 use pest_derive::Parser;
+use serde::Serialize;
 
 /// 派生解析器
 #[derive(Parser)]
@@ -8,7 +9,7 @@ use pest_derive::Parser;
 struct HoiParser;
 
 /// 条目可以是键值对、值或注释
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub enum Item {
     Pair(Pair),
     Value(Value),
@@ -16,14 +17,14 @@ pub enum Item {
 }
 
 /// 数组条目可以是值或注释（与 Item 唯一的不同就是少了 Pair）
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub enum ArrayItem {
     Value(Value),
     Comment(String),
 }
 
 /// 键值对：key <op> value（赋值与比较）
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Pair {
     pub key: Key,
     pub op: Operator,
@@ -31,7 +32,7 @@ pub struct Pair {
 }
 
 /// 键：标识符或数字或日期（在历史文件中常见）
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub enum Key {
     Identifier(String),
     Number(f64),
@@ -39,7 +40,7 @@ pub enum Key {
 }
 
 /// 运算符：赋值与比较
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub enum Operator {
     Eq,
     Le,
@@ -49,7 +50,7 @@ pub enum Operator {
 }
 
 /// 值
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub enum Value {
     Block(Block),
     Array(Array),
@@ -61,19 +62,19 @@ pub enum Value {
 }
 
 /// 块：包含一系列条目，可嵌套，用于复杂结构（例如触发器）
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Block {
     pub items: Vec<Item>,
 }
 
 /// 数组：包含一系列值（用于无键值对的块）
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Array {
     pub values: Vec<ArrayItem>,
 }
 
 /// 日期（YYYY.MM.DD(.HH)）
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Date {
     pub y: u32,
     pub m: u8,
