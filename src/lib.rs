@@ -1,7 +1,7 @@
 pub mod localisation;
-pub mod parser;
+pub mod script;
 
-use crate::parser::{parse_str, serialize_ast, Item};
+use crate::script::script::{parse_str, serialize_ast, Item};
 use serde_wasm_bindgen::{from_value, to_value};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsValue;

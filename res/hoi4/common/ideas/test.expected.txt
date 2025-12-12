@@ -1,0 +1,88 @@
+ideas = {
+	country = {
+		AFG_mohammad_zahir_shah_ns = {
+			picture = HOL_wilhelmina_ns
+			allowed = {
+				original_tag = AFG
+				has_dlc = "Poland: United and Ready"
+				# TODO 测试DLC
+			}
+			available = {
+				has_country_flag = BUL_soviet_military_agreements_flag
+				if = {
+					limit = {
+						NOT = {
+							has_country_flag = BUL_contract_with_soviet_tank_designer_flag
+						}
+					}
+					SOV = {
+						# Scripted trigger for this generates confusing tt due to indentation
+						has_opinion = {
+							target = ROOT
+							value > 0.49
+							# TODO 测试运算符号
+						}
+						has_capitulated = no
+						BUL_is_valid_subject = yes
+					}
+				}
+				OR = {
+					is_subject = no
+					is_subject_of = SOV
+					has_country_leader = {
+						name = "George II"
+						ruling_only = yes
+					}
+				}
+				is_in_faction_with = SOV
+				NOT = {
+					has_completed_focus = BUL_nationalization
+				}
+			}
+			allowed_civil_war = {
+				NOT = {
+					has_government = communism
+				}
+				NOT = {
+					any_other_country = {
+						original_tag = HOL
+						has_government = democratic
+						NOT = {
+							tag = ROOT
+						}
+					}
+				}
+			}
+			removal_cost = -1
+			modifier = {
+				stability_factor = 0.1
+			}
+			cancel = {
+				OR = {
+					URG = {
+						ROOT = {
+							original_tag = PREV
+						}
+						has_variable = var:old_power_partner
+						# TODO 测试变量运算符
+						var:old_power_partner = {
+							has_war_with = PREV
+						}
+					}
+					PAR = {
+						ROOT = {
+							original_tag = PREV
+						}
+						has_variable = var:old_power_partner
+						var:old_power_partner = {
+							has_war_with = PREV
+						}
+					}
+				}
+			}
+			traits = {
+				popular_figurehead
+			}
+		}
+	}
+}

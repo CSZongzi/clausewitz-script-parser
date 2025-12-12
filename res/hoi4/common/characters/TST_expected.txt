@@ -1,0 +1,78 @@
+characters = {
+	# TODO 测试不规则缩进
+	ABK_kirilli_bechvaya = {
+		name = ABK_kirilli_bechvaya
+		portraits = {
+			civilian = {
+				large = GFX_portrait_Kirill_Bechvaya
+			}
+		}
+		advisor = {
+			slot = political_advisor
+			idea_token = ABK_kirilli_bechvaya
+			available = {
+				OR = {
+					has_completed_focus = POL_ozon
+					has_completed_focus = POL_dissolve_the_bbwr
+				}
+			}
+			allowed = {
+				original_tag = ABK
+				OR = {
+					has_dlc = "No Step Back"
+					has_dlc = "Poland: United and Ready"
+					# TODO 测试冒号转义
+				}
+			}
+			traits = {
+				the_king_of_the_castle
+			}
+		}
+		country_leader = {
+			ideology = stalinism
+			expire = "1960.1.1.1"
+			# TODO 测试领导人退休日期
+			id = -1
+		}
+		country_leader = {
+			ideology = fascism
+			expire = "1960.1.1.1"
+			id = -1
+		}
+	}
+	ABK_aleksandr_sharvashidze = {
+		name = "ABK_aleksandr_sharvashidze"
+		# TODO 测试不规范引号
+		portraits = {
+			civilian = {
+				large = "gfx/leaders/kr_generic/Portrait_Europe_Generic_new_4.dds"
+			}
+		}
+		country_leader = {
+			ideology = oligarchism
+			expire = "1967.1.1.1"
+			id = -1
+			traits = {
+				# was a painter with connections
+				humble polyglot undecided
+				# TODO 测试多人物特质
+			}
+		}
+	}
+	ABK_generic_fascist_leader = {
+		name = "Tom Jack"
+		# TODO 测试需要翻译的内容
+		portraits = {
+			civilian = {
+				large = "gfx/leaders/kr_generic/Portrait_Europe_Generic_new_16.dds"
+			}
+		}
+		country_leader = {
+			ideology = fascism_ideology
+			expire = "1960.1.1.1"
+			id = -1
+			traits = {
+			}
+		}
+	}
+}

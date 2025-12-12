@@ -1,6 +1,6 @@
-mod parser;
+mod script;
 
-use crate::parser::{parse_str, serialize_ast};
+use crate::script::script::{parse_str, serialize_ast};
 use std::fs;
 use std::path::Path;
 
