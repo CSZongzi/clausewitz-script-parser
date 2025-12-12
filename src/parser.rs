@@ -3,12 +3,12 @@ use pest::Parser;
 use pest_derive::Parser;
 use serde::{Deserialize, Serialize};
 
-/// 派生解析器
+/// 解析器
 #[derive(Parser)]
-#[grammar = "hoi4.pest"]
-struct HoiParser;
+#[grammar = "script/script.pest"]
+struct ScriptParser;
 
-/// 条目可以是键值对、值或注释
+/// 条目
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Item {
     Pair(Pair),
@@ -16,14 +16,7 @@ pub enum Item {
     Comment(String),
 }
 
-/// 数组条目可以是值或注释（与 Item 唯一的不同就是少了 Pair）
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum ArrayItem {
-    Value(Value),
-    Comment(String),
-}
-
-/// 键值对：key <op> value（赋值与比较）
+/// 键值对
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Pair {
     pub key: Key,
@@ -82,117 +75,73 @@ pub struct Date {
     pub h: Option<u8>,
 }
 
+/// 数组条目可以是值或注释（与 Item 唯一的不同就是少了 Pair）
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum ArrayItem {
+    Value(Value),
+    Comment(String),
+}
+
 /// 从字符串解析 AST
+///
+/// # Arguments
+///
+/// * `input`: 文件内容
+///
+/// returns: Result<Vec<Item, Global>, String>
+///
+/// # Examples
+///
+/// ```
+///
+/// ```
 pub fn parse_str(input: &str) -> Result<Vec<Item>, String> {
-    let pairs = HoiParser::parse(Rule::file, input).map_err(|e| e.to_string())?;
+    let pairs = ScriptParser::parse(Rule::file, input).map_err(|e| e.to_string())?;
     Ok(parse_file(pairs))
 }
 
-/// 序列化 AST 为字符串
-pub fn serialize_ast(items: &[Item]) -> String {
-    let mut out = String::new();
-    for it in items {
-        out.push_str(&serialize_item(it, 0));
-    }
-    out
-}
-
-/// 将日期字符串解析为 Date 结构体
-fn parse_date_str(s: &str) -> Date {
-    let mut parts = s.split('.');
-    let y = parts.next().unwrap().parse::<u32>().unwrap();
-    let m = parts.next().unwrap().parse::<u8>().unwrap();
-    let d = parts.next().unwrap().parse::<u8>().unwrap();
-    let h = parts.next().map(|x| x.parse::<u8>().unwrap());
-    Date { y, m, d, h }
-}
-
-/// 解析键
-fn parse_key(p: pest::iterators::Pair<Rule>) -> Key {
-    match p.as_rule() {
-        Rule::identifier => Key::Identifier(p.as_str().to_string()),
-        Rule::number => Key::Number(p.as_str().parse::<f64>().unwrap()),
-        Rule::date => Key::Date(parse_date_str(p.as_str())),
-        _ => Key::Identifier(p.as_str().to_string()),
-    }
-}
-
-/// 解析运算符
-fn parse_operator(p: PestPair<Rule>) -> Operator {
-    match p.as_str() {
-        "=" => Operator::Eq,
-        "<=" => Operator::Le,
-        ">=" => Operator::Ge,
-        "<" => Operator::Lt,
-        ">" => Operator::Gt,
-        _ => Operator::Eq,
-    }
-}
-
-/// 解析值
-fn parse_value(p: pest::iterators::Pair<Rule>) -> Value {
-    match p.as_rule() {
-        Rule::string => {
-            let inner = p.into_inner().next().unwrap();
-            let s = inner.as_str();
-            Value::String(s.to_string())
-        }
-        Rule::identifier => Value::Identifier(p.as_str().to_string()),
-        Rule::number => Value::Number(p.as_str().parse::<f64>().unwrap()),
-        Rule::date => Value::Date(parse_date_str(p.as_str())),
-        Rule::boolean => Value::Boolean(p.as_str() == "yes"),
-        _ => Value::Identifier(p.as_str().to_string()),
-    }
-}
-
-/// 解析块内容
+/// 根据脚本文件解析内容
 ///
-/// 判断块是纯数组（Array）还是混合键值对的块（Block）
-/// 如果块中只包含值或注释，则解析为 Array，否则解析为 Block
-fn parse_block(p: pest::iterators::Pair<Rule>) -> Value {
-    let mut items: Vec<Item> = Vec::new();
-    let mut only_values = true;
+/// # Arguments
+///
+/// * `p`: 脚本文件
+///
+/// returns: Vec<Item, Global>
+///
+/// # Examples
+///
+/// ```
+///
+/// ```
+fn parse_file(p: Pairs<Rule>) -> Vec<Item> {
+    let mut items = Vec::new();
+    let file = p.into_iter().next().unwrap();
 
-    for child in p.into_inner() {
-        let parsed = parse_item(child.clone());
-        match &parsed {
-            Item::Value(_) => {
-                items.push(parsed);
-            }
-            Item::Pair(_) => {
-                // 一旦出现键值对，就不能是数组
-                only_values = false;
-                items.push(parsed);
-            }
-            Item::Comment(_) => {
-                items.push(parsed);
-            }
+    for child in file.into_inner() {
+        if child.as_rule() == Rule::EOI {
+            continue;
         }
+
+        items.push(parse_item(child));
     }
 
-    if only_values {
-        // 转换 Vec<Item> 为 Vec<ArrayItem>
-        let array_items: Vec<ArrayItem> = items
-            .into_iter()
-            .map(|item| match item {
-                Item::Value(v) => ArrayItem::Value(v),
-                Item::Comment(c) => ArrayItem::Comment(c),
-                _ => unreachable!("Should not happen if only_atoms is true"),
-            })
-            .collect();
-
-        Value::Array(Array {
-            values: array_items,
-        })
-    } else {
-        Value::Block(Block { items })
-    }
+    items
 }
 
-/// 递归解析 Item
+/// 根据条目列表解析条目
 ///
-/// Item 可以是键值对 (Pair)、值 (Value) 或注释 (Comment)
-fn parse_item(p: pest::iterators::Pair<Rule>) -> Item {
+/// # Arguments
+///
+/// * `p`: 条目列表
+///
+/// returns: Item
+///
+/// # Examples
+///
+/// ```
+///
+/// ```
+fn parse_item(p: PestPair<Rule>) -> Item {
     match p.as_rule() {
         Rule::item => {
             let mut inner = p.into_inner();
@@ -250,32 +199,256 @@ fn parse_item(p: pest::iterators::Pair<Rule>) -> Item {
     }
 }
 
-/// 解析整个文件
+/// 解析键
 ///
-/// 将 Pest 解析结果转换为 Item 列表
-fn parse_file(pairs: Pairs<Rule>) -> Vec<Item> {
-    let mut items = Vec::new();
-    let file = pairs.into_iter().next().unwrap();
-    for child in file.into_inner() {
-        if child.as_rule() == Rule::EOI {
-            continue;
-        }
-        items.push(parse_item(child));
+/// # Arguments
+///
+/// * `p`: 条目
+///
+/// returns: Key
+///
+/// # Examples
+///
+/// ```
+///
+/// ```
+fn parse_key(p: PestPair<Rule>) -> Key {
+    match p.as_rule() {
+        Rule::identifier => Key::Identifier(p.as_str().to_string()),
+        Rule::number => Key::Number(p.as_str().parse::<f64>().unwrap()),
+        Rule::date => Key::Date(parse_date_str(p.as_str())),
+        _ => Key::Identifier(p.as_str().to_string()),
     }
-    items
 }
 
-/// 序列化日期
+/// 解析运算符
 ///
-/// 输出格式为 YYYY.MM.DD 或 "YYYY.MM.DD.HH"
-fn serialize_date(d: &Date) -> String {
-    match d.h {
-        Some(h) => format!("\"{}.{}.{}.{}\"", d.y, d.m, d.d, h),
-        None => format!("{}.{}.{}", d.y, d.m, d.d),
+/// # Arguments
+///
+/// * `p`: 条目
+///
+/// returns: Operator
+///
+/// # Examples
+///
+/// ```
+///
+/// ```
+fn parse_operator(p: PestPair<Rule>) -> Operator {
+    match p.as_str() {
+        "=" => Operator::Eq,
+        "<=" => Operator::Le,
+        ">=" => Operator::Ge,
+        "<" => Operator::Lt,
+        ">" => Operator::Gt,
+        _ => Operator::Eq,
+    }
+}
+
+/// 解析值
+///
+/// # Arguments
+///
+/// * `p`: 条目
+///
+/// returns: Value
+///
+/// # Examples
+///
+/// ```
+///
+/// ```
+fn parse_value(p: PestPair<Rule>) -> Value {
+    match p.as_rule() {
+        Rule::date => Value::Date(parse_date_str(p.as_str())),
+        Rule::number => Value::Number(p.as_str().parse::<f64>().unwrap()),
+        Rule::boolean => Value::Boolean(p.as_str() == "yes"),
+        Rule::string => {
+            let inner = p.into_inner().next().unwrap();
+            let s = inner.as_str();
+            Value::String(s.to_string())
+        }
+        Rule::identifier => Value::Identifier(p.as_str().to_string()),
+        _ => Value::Identifier(p.as_str().to_string()),
+    }
+}
+
+/// 解析块
+///
+/// # Arguments
+///
+/// * `p`: 条目
+///
+/// returns: Value
+///
+/// # Examples
+///
+/// ```
+/// 判断块是纯数组还是混合键值对的块，若块中仅含值或注释，则解析为数组，否则解析为块
+/// ```
+fn parse_block(p: PestPair<Rule>) -> Value {
+    let mut items: Vec<Item> = Vec::new();
+    let mut only_values = true;
+
+    for child in p.into_inner() {
+        let parsed = parse_item(child.clone());
+        match &parsed {
+            Item::Value(_) => {
+                items.push(parsed);
+            }
+            Item::Pair(_) => {
+                // 一旦出现键值对，就不能是数组
+                only_values = false;
+                items.push(parsed);
+            }
+            Item::Comment(_) => {
+                items.push(parsed);
+            }
+        }
+    }
+
+    if only_values {
+        // 转换 Vec<Item> 为 Vec<ArrayItem>
+        let array_items: Vec<ArrayItem> = items
+            .into_iter()
+            .map(|item| match item {
+                Item::Value(v) => ArrayItem::Value(v),
+                Item::Comment(c) => ArrayItem::Comment(c),
+                _ => unreachable!("逻辑保证：only_values 为 true 时不会走到这里"),
+            })
+            .collect();
+
+        Value::Array(Array {
+            values: array_items,
+        })
+    } else {
+        Value::Block(Block { items })
+    }
+}
+
+/// 解析日期
+///
+/// # Arguments
+///
+/// * `s`: 日期字符串
+///
+/// returns: Date
+///
+/// # Examples
+///
+/// ```
+///
+/// ```
+fn parse_date_str(s: &str) -> Date {
+    let mut parts = s.split('.');
+    let y = parts.next().unwrap().parse::<u32>().unwrap();
+    let m = parts.next().unwrap().parse::<u8>().unwrap();
+    let d = parts.next().unwrap().parse::<u8>().unwrap();
+    let h = parts.next().map(|x| x.parse::<u8>().unwrap());
+    Date { y, m, d, h }
+}
+
+/// 序列化 AST 为字符串
+///
+/// # Arguments
+///
+/// * `ast`: 条目列表
+///
+/// returns: String
+///
+/// # Examples
+///
+/// ```
+///
+/// ```
+pub fn serialize_ast(ast: &[Item]) -> String {
+    let mut out = String::new();
+
+    for it in ast {
+        out.push_str(&serialize_item(it, 0));
+    }
+
+    out
+}
+
+/// 序列化条目
+///
+/// # Arguments
+///
+/// * `item`: 条目
+/// * `indent`: 缩进长度
+///
+/// returns: String
+///
+/// # Examples
+///
+/// ```
+///
+/// ```
+fn serialize_item(item: &Item, indent: usize) -> String {
+    match item {
+        Item::Pair(pair) => {
+            let mut line = String::new();
+            line.push_str(&"\t".repeat(indent));
+            line.push_str(&serialize_key(&pair.key));
+            line.push_str(" ");
+            line.push_str(match pair.op {
+                Operator::Eq => "=",
+                Operator::Le => "<=",
+                Operator::Ge => ">=",
+                Operator::Lt => "<",
+                Operator::Gt => ">",
+            });
+            line.push_str(" ");
+            match pair.value {
+                // 块和数组自带换行和缩进逻辑，无需额外处理
+                Value::Array(_) | Value::Block(_) => {
+                    line.push_str(&serialize_value(&pair.value, indent));
+                }
+                _ => {
+                    line.push_str(&serialize_value(&pair.value, indent));
+                    line.push('\n');
+                }
+            }
+            line
+        }
+        Item::Value(v) => {
+            let mut line = String::new();
+            line.push_str(&"\t".repeat(indent));
+            match v {
+                Value::Array(_) | Value::Block(_) => {
+                    line.push_str(&serialize_value(v, indent));
+                }
+                _ => {
+                    line.push_str(&serialize_value(v, indent));
+                    line.push('\n');
+                }
+            }
+            line
+        }
+        Item::Comment(s) => {
+            let mut line = String::new();
+            line.push_str(&"\t".repeat(indent));
+            line.push_str(s);
+            line.push('\n');
+            line
+        }
     }
 }
 
 /// 序列化键
+///
+/// # Arguments
+///
+/// * `k`: 键
+///
+/// returns: String
+///
+/// # Examples
+///
+/// ```
+///
+/// ```
 fn serialize_key(k: &Key) -> String {
     match k {
         Key::Identifier(s) => s.clone(),
@@ -286,7 +459,18 @@ fn serialize_key(k: &Key) -> String {
 
 /// 序列化值
 ///
-/// 处理各种 Value 类型的字符串表示，包括缩进和换行
+/// # Arguments
+///
+/// * `v`: 值
+/// * `indent`: 缩进长度
+///
+/// returns: String
+///
+/// # Examples
+///
+/// ```
+///
+/// ```
 fn serialize_value(v: &Value, indent: usize) -> String {
     match v {
         Value::String(s) => format!("\"{}\"", s),
@@ -375,56 +559,22 @@ fn serialize_value(v: &Value, indent: usize) -> String {
     }
 }
 
-/// 序列化条目
+/// 序列化日期
 ///
-/// 负责将 Item (Pair/Value/Comment) 转换为格式化的字符串
-fn serialize_item(i: &Item, indent: usize) -> String {
-    match i {
-        Item::Pair(pair) => {
-            let mut line = String::new();
-            line.push_str(&"\t".repeat(indent));
-            line.push_str(&serialize_key(&pair.key));
-            line.push_str(" ");
-            line.push_str(match pair.op {
-                Operator::Eq => "=",
-                Operator::Le => "<=",
-                Operator::Ge => ">=",
-                Operator::Lt => "<",
-                Operator::Gt => ">",
-            });
-            line.push_str(" ");
-            match pair.value {
-                // 块和数组自带换行和缩进逻辑，无需额外处理
-                Value::Array(_) | Value::Block(_) => {
-                    line.push_str(&serialize_value(&pair.value, indent));
-                }
-                _ => {
-                    line.push_str(&serialize_value(&pair.value, indent));
-                    line.push('\n');
-                }
-            }
-            line
-        }
-        Item::Value(v) => {
-            let mut line = String::new();
-            line.push_str(&"\t".repeat(indent));
-            match v {
-                Value::Array(_) | Value::Block(_) => {
-                    line.push_str(&serialize_value(v, indent));
-                }
-                _ => {
-                    line.push_str(&serialize_value(v, indent));
-                    line.push('\n');
-                }
-            }
-            line
-        }
-        Item::Comment(s) => {
-            let mut line = String::new();
-            line.push_str(&"\t".repeat(indent));
-            line.push_str(s);
-            line.push('\n');
-            line
-        }
+/// # Arguments
+///
+/// * `d`: 日期
+///
+/// returns: String
+///
+/// # Examples
+///
+/// ```
+///
+/// ```
+fn serialize_date(d: &Date) -> String {
+    match d.h {
+        Some(h) => format!("\"{}.{}.{}.{}\"", d.y, d.m, d.d, h),
+        None => format!("{}.{}.{}", d.y, d.m, d.d),
     }
 }

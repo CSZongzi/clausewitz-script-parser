@@ -1,0 +1,45 @@
+// ---------------------------------------------------------
+// Clausewitz Localisation 语法定义（Pest）
+// ---------------------------------------------------------
+
+// 空白字符
+WHITESPACE = _{ " " | "\t" }
+
+// 字节顺序标记
+bom = _{ "\u{FEFF}" }
+
+// 文件根节点
+file   = { SOI ~ bom? ~ header ~ item* ~ EOI }
+
+// 文件头
+header = { lang ~ ":" ~ NEWLINE? }
+
+// 语种标识
+lang   = @{ "l_" ~ (ASCII_ALPHANUMERIC | "_")+ }
+
+// 条目
+item  = { pair | comment | blank }
+
+// 空行
+blank = _{ WHITESPACE* ~ NEWLINE }
+
+// 键值对
+pair = { WHITESPACE* ~ key ~ ":" ~ version? ~ value ~ (WHITESPACE* ~ comment)? ~ NEWLINE? }
+
+// 键
+key = @{ (ASCII_ALPHANUMERIC | "_" | "." | "-")+ }
+
+// 版本号
+version = @{ ASCII_DIGIT+ }
+
+// 值
+value = { string }
+
+// 字符串
+string = ${ "\"" ~ inner ~ "\"" }
+
+// 内部转义字符串
+inner  = @{ ("\\" ~ ANY | !("\"") ~ ANY)* }
+
+// 注释
+comment = @{ "#" ~ (!NEWLINE ~ ANY)* }

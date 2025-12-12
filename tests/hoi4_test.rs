@@ -77,4 +77,22 @@ mod hoi4_tests {
             OUTPUT_TXT_PATH,
         );
     }
+
+    // /// 测试 res/hoi4/localisation
+    // #[test]
+    // fn test_localisation() {
+    //     const BASE_INPUT_PATH: &str = "res/hoi4/localisation/test_l_simp_chinese.yml";
+    //     const EXPECTED_TXT_PATH: &str = "res/hoi4/common/ideas/test_l_simp_chinese.expected.yml";
+    //     const OUTPUT_DIR: &str = "output/hoi4/localisation";
+    //     const OUTPUT_AST_PATH: &str = "output/hoi4/localisation/test_l_simp_chinese.ast";
+    //     const OUTPUT_TXT_PATH: &str = "output/hoi4/localisation/test_l_simp_chinese.yml";
+    //
+    //     run_test(
+    //         BASE_INPUT_PATH,
+    //         EXPECTED_TXT_PATH,
+    //         OUTPUT_DIR,
+    //         OUTPUT_AST_PATH,
+    //         OUTPUT_TXT_PATH,
+    //     );
+    // }
 }
