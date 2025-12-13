@@ -145,6 +145,7 @@ fn parse_item(p: PestPair<Rule>) -> Item {
     match p.as_rule() {
         Rule::item => {
             let mut inner = p.into_inner();
+
             if let Some(child) = inner.next() {
                 return parse_item(child);
             }
@@ -216,7 +217,7 @@ fn parse_key(p: PestPair<Rule>) -> Key {
     match p.as_rule() {
         Rule::identifier => Key::Identifier(p.as_str().to_string()),
         Rule::number => Key::Number(p.as_str().parse::<f64>().unwrap()),
-        Rule::date => Key::Date(parse_date_str(p.as_str())),
+        Rule::date => Key::Date(parse_date(p.as_str())),
         _ => Key::Identifier(p.as_str().to_string()),
     }
 }
@@ -260,7 +261,7 @@ fn parse_operator(p: PestPair<Rule>) -> Operator {
 /// ```
 fn parse_value(p: PestPair<Rule>) -> Value {
     match p.as_rule() {
-        Rule::date => Value::Date(parse_date_str(p.as_str())),
+        Rule::date => Value::Date(parse_date(p.as_str())),
         Rule::number => Value::Number(p.as_str().parse::<f64>().unwrap()),
         Rule::boolean => Value::Boolean(p.as_str() == "yes"),
         Rule::string => {
@@ -339,7 +340,7 @@ fn parse_block(p: PestPair<Rule>) -> Value {
 /// ```
 ///
 /// ```
-fn parse_date_str(s: &str) -> Date {
+fn parse_date(s: &str) -> Date {
     let mut parts = s.split('.');
     let y = parts.next().unwrap().parse::<u32>().unwrap();
     let m = parts.next().unwrap().parse::<u8>().unwrap();
@@ -392,13 +393,7 @@ fn serialize_item(item: &Item, indent: usize) -> String {
             line.push_str(&"\t".repeat(indent));
             line.push_str(&serialize_key(&pair.key));
             line.push_str(" ");
-            line.push_str(match pair.op {
-                Operator::Eq => "=",
-                Operator::Le => "<=",
-                Operator::Ge => ">=",
-                Operator::Lt => "<",
-                Operator::Gt => ">",
-            });
+            line.push_str(serialize_operator(&pair.op));
             line.push_str(" ");
             match pair.value {
                 // 块和数组自带换行和缩进逻辑，无需额外处理
@@ -457,6 +452,29 @@ fn serialize_key(k: &Key) -> String {
     }
 }
 
+/// 序列化运算符
+///
+/// # Arguments
+///
+/// * `op`: 运算符
+///
+/// returns: String
+///
+/// # Examples
+///
+/// ```
+///
+/// ```
+fn serialize_operator(op: &Operator) -> &'static str {
+    match op {
+        Operator::Eq => "=",
+        Operator::Le => "<=",
+        Operator::Ge => ">=",
+        Operator::Lt => "<",
+        Operator::Gt => ">",
+    }
+}
+
 /// 序列化值
 ///
 /// # Arguments
@@ -477,13 +495,7 @@ fn serialize_value(v: &Value, indent: usize) -> String {
         Value::Identifier(s) => s.clone(),
         Value::Number(n) => n.to_string(),
         Value::Date(d) => serialize_date(d),
-        Value::Boolean(b) => {
-            if *b {
-                "yes".to_string()
-            } else {
-                "no".to_string()
-            }
-        }
+        Value::Boolean(b) => serialize_boolean(*b),
         Value::Array(arr) => {
             // 预渲染数组元素
             let rendered: Vec<String> = arr
@@ -549,9 +561,11 @@ fn serialize_value(v: &Value, indent: usize) -> String {
         Value::Block(block) => {
             let mut out = String::new();
             out.push_str("{\n");
+
             for it in &block.items {
                 out.push_str(&serialize_item(it, indent + 1));
             }
+
             out.push_str(&"\t".repeat(indent));
             out.push_str("}\n");
             out
@@ -576,5 +590,26 @@ fn serialize_date(d: &Date) -> String {
     match d.h {
         Some(h) => format!("\"{}.{}.{}.{}\"", d.y, d.m, d.d, h),
         None => format!("{}.{}.{}", d.y, d.m, d.d),
+    }
+}
+
+/// 序列化布尔值
+///
+/// # Arguments
+///
+/// * `b`: 布尔值
+///
+/// returns: String
+///
+/// # Examples
+///
+/// ```
+///
+/// ```
+fn serialize_boolean(b: bool) -> String {
+    if b {
+        "yes".to_string()
+    } else {
+        "no".to_string()
     }
 }

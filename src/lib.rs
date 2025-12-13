@@ -1,5 +1,6 @@
 pub mod localisation;
 pub mod script;
+pub mod string_utils;
 
 use crate::localisation::localisation::{
     parse_str as parse_loc_str, serialize_ast as serialize_loc_ast,

@@ -1,3 +1,4 @@
+use crate::string_utils::{escape_string, unescape_string};
 use pest::iterators::Pair as PestPair;
 use pest::Parser;
 use pest_derive::Parser;
@@ -154,12 +155,12 @@ fn parse_pair(p: PestPair<Rule>) -> Pair {
         match part.as_rule() {
             Rule::key => key = part.as_str().to_string(),
             Rule::version => version = Some(part.as_str().parse::<u32>().unwrap()),
-            Rule::value => value = part.as_str().to_string(),
-            other => {
+            Rule::inner => value = unescape_string(part.as_str()),
+            _other => {
                 #[cfg(debug_assertions)]
                 eprintln!(
                     "【parse_pair】遗漏规则：{:?}，文本：{:?}",
-                    other,
+                    _other,
                     part.as_str()
                 );
             }
@@ -269,13 +270,6 @@ fn serialize_pair(pair: &Pair) -> String {
 ///
 /// ```
 fn normalize_localisation_value(value: &str) -> String {
-    let trimmed = value.trim();
-
-    if trimmed.len() >= 2 && trimmed.starts_with('"') && trimmed.ends_with('"') {
-        return trimmed.to_string();
-    }
-
-    let escaped = trimmed.replace('\\', "\\\\").replace('"', "\\\"");
-
+    let escaped = escape_string(value);
     format!("\"{}\"", escaped)
 }
