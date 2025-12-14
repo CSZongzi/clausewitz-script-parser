@@ -36,7 +36,7 @@ version = @{ ASCII_DIGIT+ }
 value = _{ "\"" ~ inner ~ "\"" }
 
 // 内部转义字符串
-inner = @{ ("\\" ~ ANY | !("\"") ~ ANY)* }
+inner = @{ (!("\"" ~ WHITESPACE* ~ (NEWLINE | comment | EOI)) ~ ANY)* }
 
 // 注释
 comment = @{ "#" ~ (!NEWLINE ~ ANY)* }

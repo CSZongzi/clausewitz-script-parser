@@ -155,7 +155,7 @@ fn parse_pair(p: PestPair<Rule>) -> Pair {
         match part.as_rule() {
             Rule::key => key = part.as_str().to_string(),
             Rule::version => version = Some(part.as_str().parse::<u32>().unwrap()),
-            Rule::inner => value = unescape_string(part.as_str()),
+            Rule::inner => value = parse_inner(part.as_str()),
             _other => {
                 #[cfg(debug_assertions)]
                 eprintln!(
@@ -172,6 +172,23 @@ fn parse_pair(p: PestPair<Rule>) -> Pair {
         version,
         value,
     }
+}
+
+/// 解析内部转义字符串
+///
+/// # Arguments
+///
+/// * `i`: 内部转义字符串
+///
+/// returns: String
+///
+/// # Examples
+///
+/// ```
+///
+/// ```
+fn parse_inner(i: &str) -> String {
+    unescape_string(i)
 }
 
 /// 序列化 AST 为字符串
