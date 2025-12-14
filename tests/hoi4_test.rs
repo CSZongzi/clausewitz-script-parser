@@ -65,7 +65,7 @@ mod hoi4_tests {
 
         let input_path = Path::new(base_input_path);
         let input = fs::read_to_string(input_path).expect("读取失败！源文件不存在");
-        let ast = parse_fn(&input).expect("解析失败！源文件内容不合法");
+        let ast = parse_fn(&input).unwrap_or_else(|e| panic!("{}", e));
 
         fs::create_dir_all(output_dir).expect("创建失败！输出路径不合法");
 

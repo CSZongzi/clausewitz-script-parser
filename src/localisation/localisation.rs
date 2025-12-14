@@ -51,9 +51,16 @@ pub struct Pair {
 ///
 /// ```
 pub fn parse_str(input: &str) -> Result<File, String> {
-    let pairs = LocParser::parse(Rule::file, input).map_err(|e| e.to_string())?;
-    let file = pairs.into_iter().next().unwrap();
-    parse_file(file)
+    match LocParser::parse(Rule::file, input) {
+        Ok(pairs) => parse_file(pairs.into_iter().next().unwrap()),
+        Err(e) => {
+            if !has_header_lang(input) {
+                return Err("解析失败！文件头丢失".to_string());
+            }
+
+            Err(e.to_string())
+        }
+    }
 }
 
 /// 根据本地化文件解析内容
@@ -189,6 +196,45 @@ fn parse_pair(p: PestPair<Rule>) -> Pair {
 /// ```
 fn parse_inner(i: &str) -> String {
     unescape_string(i)
+}
+
+/// 是否存在文件头及语种标识
+///
+/// # Arguments
+///
+/// * `input`: 文件内容
+///
+/// returns: bool
+///
+/// # Examples
+///
+/// ```
+///
+/// ```
+fn has_header_lang(input: &str) -> bool {
+    input.lines().any(|line| {
+        let s = line.trim_start();
+
+        if s.is_empty() {
+            return false;
+        }
+
+        if s.starts_with('#') || s.starts_with("//") {
+            return false;
+        }
+
+        let s = s.trim_end();
+        if !s.starts_with("l_") {
+            return false;
+        }
+
+        if let Some(idx) = s.find(':') {
+            let lang = &s[..idx];
+            lang.len() > 2 && lang.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
+        } else {
+            false
+        }
+    })
 }
 
 /// 序列化 AST 为字符串

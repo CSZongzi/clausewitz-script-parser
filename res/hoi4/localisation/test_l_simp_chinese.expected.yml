@@ -1,4 +1,6 @@
 ﻿l_simp_chinese:
+ # === [LocEditor:OrphanedFile] File contains only orphaned keys ===
+ # === [LocEditor:OrphanedKeys] Keys that do not exist in English ===
  iceland_events.23.t: "[ICE.GetName] Declares itself \"Protector of the North Sea Passage\""
  # CHI
  CHI_Deng_LongGuang:0 "邓龙光"

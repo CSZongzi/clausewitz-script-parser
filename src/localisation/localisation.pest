@@ -9,7 +9,7 @@ WHITESPACE = _{ " " | "\t" }
 bom = _{ "\u{FEFF}" }
 
 // 文件根节点
-file = { SOI ~ bom? ~ header ~ item* ~ EOI }
+file = { SOI ~ bom? ~ item* ~ header ~ item* ~ EOI }
 
 // 文件头
 header = { lang ~ ":" ~ NEWLINE? }
