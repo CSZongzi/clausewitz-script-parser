@@ -85,7 +85,7 @@ mod hoi4_tests {
     #[test]
     fn test_characters() {
         const BASE_INPUT_PATH: &str = "res/hoi4/common/characters/TST.txt";
-        const EXPECTED_TXT_PATH: &str = "res/hoi4/common/characters/TST_expected.txt";
+        const EXPECTED_TXT_PATH: &str = "res/hoi4/common/characters/TST.expected.txt";
         const OUTPUT_DIR: &str = "output/hoi4/common/characters";
         const OUTPUT_AST_PATH: &str = "output/hoi4/common/characters/TST.ast";
         const OUTPUT_TXT_PATH: &str = "output/hoi4/common/characters/TST.txt";
@@ -109,6 +109,26 @@ mod hoi4_tests {
         const OUTPUT_DIR: &str = "output/hoi4/common/ideas";
         const OUTPUT_AST_PATH: &str = "output/hoi4/common/ideas/test.ast";
         const OUTPUT_TXT_PATH: &str = "output/hoi4/common/ideas/test.txt";
+
+        run_test_with(
+            BASE_INPUT_PATH,
+            EXPECTED_TXT_PATH,
+            OUTPUT_DIR,
+            OUTPUT_AST_PATH,
+            OUTPUT_TXT_PATH,
+            |s| parse_scr_parse(s),
+            |ast| serialize_scr_ast(ast),
+        );
+    }
+
+    /// 测试 interface 文件
+    #[test]
+    fn test_interface() {
+        const BASE_INPUT_PATH: &str = "res/hoi4/interface/test.gfx";
+        const EXPECTED_TXT_PATH: &str = "res/hoi4/interface/test.expected.gfx";
+        const OUTPUT_DIR: &str = "output/hoi4/interface";
+        const OUTPUT_AST_PATH: &str = "output/hoi4/interface/test.ast";
+        const OUTPUT_TXT_PATH: &str = "output/hoi4/interface/test.gfx";
 
         run_test_with(
             BASE_INPUT_PATH,

@@ -1,0 +1,7 @@
+spriteTypes = {
+	# CHI
+	spriteType = {
+		name = "GFX_portrait_Deng_GuangLong"
+		texturefile = "gfx/leaders/CHI/portrait_CHI_Deng_LongGuang.dds"
+	}
+}
