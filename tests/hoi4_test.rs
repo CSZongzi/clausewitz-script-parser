@@ -121,6 +121,26 @@ mod hoi4_tests {
         );
     }
 
+    /// 测试 common/national_focus 文件
+    #[test]
+    fn test_national_focus() {
+        const BASE_INPUT_PATH: &str = "res/hoi4/common/national_focus/test.txt";
+        const EXPECTED_TXT_PATH: &str = "res/hoi4/common/national_focus/test.expected.txt";
+        const OUTPUT_DIR: &str = "output/hoi4/common/national_focus";
+        const OUTPUT_AST_PATH: &str = "output/hoi4/common/national_focus/test.ast";
+        const OUTPUT_TXT_PATH: &str = "output/hoi4/common/national_focus/test.txt";
+
+        run_test_with(
+            BASE_INPUT_PATH,
+            EXPECTED_TXT_PATH,
+            OUTPUT_DIR,
+            OUTPUT_AST_PATH,
+            OUTPUT_TXT_PATH,
+            |s| parse_scr_parse(s),
+            |ast| serialize_scr_ast(ast),
+        );
+    }
+
     /// 测试 interface 文件
     #[test]
     fn test_interface() {
