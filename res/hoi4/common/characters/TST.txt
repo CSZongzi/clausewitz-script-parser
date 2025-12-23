@@ -70,4 +70,4 @@ characters= { # TODO 测试不规则缩进
             traits = {}
         }
     }
-}
+# TODO 测试缺少的}

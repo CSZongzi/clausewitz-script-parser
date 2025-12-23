@@ -76,3 +76,4 @@ characters = {
 		}
 	}
 }
+# TODO 测试缺少的}
