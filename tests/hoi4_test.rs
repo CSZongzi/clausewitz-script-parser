@@ -7,8 +7,6 @@ mod hoi4_tests {
         parse_str as parse_scr_parse, serialize_ast as serialize_scr_ast,
     };
     use std::fmt::{Debug, Display};
-    use std::fs;
-    use std::path::Path;
 
     /// # 测试函数
     ///
