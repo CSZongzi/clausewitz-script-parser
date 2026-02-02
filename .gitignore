@@ -1,6 +1,9 @@
-# Output
+# IDE
+.idea
+
+# 输出目录
 output/
 target/
 
-# HOI4 Resources
-res/
+# 资源目录
+/pkg/

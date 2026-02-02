@@ -1,0 +1,14 @@
+﻿l_simp_chinese:
+ # === [LocEditor:OrphanedFile] File contains only orphaned keys ===
+ # === [LocEditor:OrphanedKeys] Keys that do not exist in English ===
+ iceland_events.23.t: "[ICE.GetName] Declares itself \"Protector of the North Sea Passage\""
+ # CHI
+ CHI_Deng_LongGuang:0 "邓龙光"
+ FIN_bad_side: "[FIN.GetLeader]§R公众信任低§!"
+ PRC_form_PLAN_category:0 "人民海军"
+ SWE_return_of_the_king: "§Y国王§!重掌§Y[SWE.GetFlag][SWE.GetAdjective]§!政治"
+ FIN_motion_of_no_confidence_cost_very_bad_range_tt: "§Y$FIN_motion_of_no_confidence_against_leader$§!决议花费：£pol_power $RIGHT|0Y$。"
+ ICE_uprising_scotland_tt: "§Y[121.owner.GetName]§!：[121.owner.GetCommunistParty]支持度大于[?ICE.communism_support_needed|%Y0]"
+ BATTLE_LOC: "$NAME$：$VALUE1$"
+ POSITIVE_BATTLE_VALUE: "$VALUE|2%G$"
+ Demo_1:0 "Quote \"This is a quote, there are $$100.\""

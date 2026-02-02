@@ -1,0 +1,46 @@
+focus_tree = {
+	id = austro_hungarian_releasable_focus
+	bypass = {
+		"PHI" = {
+			not = {
+				is_subject_of = ROOT
+			}
+		}
+	}
+	country = {
+		factor = 0
+		modifier = {
+			add = 10
+			OR = {
+				tag = SLO
+				tag = TRA
+				tag = CRO
+				tag = LBV
+				tag = SIL
+				tag = MNT
+				tag = BOS
+				tag = SLV
+				tag = HRZ
+				tag = ALB
+			}
+			has_dlc = "Gotterdammerung"
+		}
+	}
+	default = no
+	completion_reward = {
+		1009 = {
+			add_building_construction = {
+				type = dam
+				level = 1
+				instant_build = yes
+				province = {
+					id = 2078
+				}
+			}
+		}
+		custom_effect_tooltip = {
+			localization_key = building_state_modifier|dam
+			INDENT = "    "
+		}
+	}
+}

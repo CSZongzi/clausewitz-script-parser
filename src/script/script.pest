@@ -1,0 +1,59 @@
+// ---------------------------------------------------------
+// Clausewitz Script 语法定义（Pest）
+// ---------------------------------------------------------
+
+// 空白字符
+WHITESPACE = _{ " " | "\t" | "\r" | "\n" }
+
+// 字节顺序标记
+bom = _{ "\u{FEFF}" }
+
+// 文件根节点
+file = { SOI ~ bom? ~ item* ~ EOI }
+
+// 条目可以是键值对、值或注释
+item = { pair | value | comment }
+
+// 键值对：key <op> value（赋值与比较）
+pair = { key ~ operator ~ value }
+
+// 键：标识符或数字或日期（在历史文件中常见）
+key = { date | number | identifier | quoted_identifier }
+
+// 运算符：赋值与比较
+operator = { "=" | "<=" | ">=" | "<" | ">" }
+
+// 值
+value = {
+    block
+  | date
+  | number
+  | boolean
+  | string
+  | identifier
+}
+
+// 块：包含一系列条目，可嵌套，用于复杂结构（例如触发器）
+block = { "{" ~ item* ~ "}" }
+
+// 布尔：yes 或 no（避免与更长的标识符混淆）
+boolean = @{ ("yes" | "no") ~ !identifier_char }
+
+// 日期：YYYY.MM.DD 或 YYYY.MM.DD.HH
+date = @{ ASCII_DIGIT{3, 4} ~ "." ~ ASCII_DIGIT{1, 2} ~ "." ~ ASCII_DIGIT{1, 2} ~ ("." ~ ASCII_DIGIT{1, 2})? }
+
+// 数字：整数或浮点数（支持前导负号）
+number = @{ ("-"? ~ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)?) ~ !identifier_char }
+
+// 标识符
+identifier      = @{ identifier_char+ }
+// 引号标识符（容错）
+quoted_identifier = ${ "\"" ~ identifier_char+ ~ "\"" }
+identifier_char = _{ !WHITESPACE ~ !("{" | "}" | "=" | "<" | ">" | "\"" | "#") ~ ANY }
+
+// 字符串：双引号包裹，内部支持转义
+string = ${ "\"" ~ inner ~ "\"" }
+inner  = @{ ("\\" ~ ANY | !("\"") ~ ANY)* }
+
+// 注释
+comment = @{ "#" ~ (!NEWLINE ~ ANY)* }
